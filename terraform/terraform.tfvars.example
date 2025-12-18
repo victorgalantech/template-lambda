@@ -1,0 +1,18 @@
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "dev"
+
+# Project Configuration
+project_name         = "lambda-function"
+lambda_function_name = "example-lambda-function"
+
+# Lambda Configuration
+lambda_memory_size = 512
+lambda_timeout     = 30
+
+# ECR Configuration
+ecr_repository_name = "lambda-function-repo"
+image_tag           = "latest"
+
+# Logging Configuration
+log_retention_days = 7
