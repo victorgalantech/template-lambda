@@ -5,11 +5,12 @@ on:
     branches:
       - main
       - develop
+      - feature/*
   pull_request:
     branches:
       - main
       - develop
-
+      - feature/*
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: lambda-function-repo
