@@ -1,15 +1,16 @@
 # AWS Lambda CI/CD Template
 
-A production-ready AWS Lambda function template with complete CI/CD pipeline using GitHub Actions, Docker, Terraform, and SonarQube.
+A production-ready AWS Lambda function template with complete CI/CD pipeline using GitHub Actions, Docker, Terraform, and Codecov.
 
 ## 🚀 Features
 
 - **Python 3.12** Lambda function with type hints
 - **Poetry** for dependency management
+- **Ruff** ultra-fast linting and formatting (replaces Black, isort, Flake8)
 - **Docker** containerized Lambda deployment
 - **Terraform** Infrastructure as Code (IaC)
 - **GitHub Actions** CI/CD pipeline
-- **SonarQube** code quality and security analysis
+- **Codecov** code coverage tracking
 - **Pytest** with comprehensive unit tests and coverage
 - **AWS ECR** for container registry
 - **CloudWatch** logging and monitoring

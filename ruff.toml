@@ -1,0 +1,57 @@
+# Ruff configuration
+# Ruff is an extremely fast Python linter and formatter, written in Rust
+# It replaces Black, isort, Flake8, and more
+
+# Target Python 3.12
+target-version = "py312"
+
+# Line length (same as Black default)
+line-length = 100
+
+# Enable auto-fixing where possible
+fix = true
+
+[lint]
+# Enable specific rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+# Ignore specific rules
+ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by formatter)
+]
+
+# Exclude directories
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".terraform",
+]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Unused imports in __init__.py
+
+[format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Respect magic trailing commas
+skip-magic-trailing-comma = false

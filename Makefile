@@ -18,15 +18,14 @@ test: ## Run unit tests with coverage
 test-verbose: ## Run unit tests with verbose output
 	poetry run pytest tests/ -v --cov=src --cov-report=term-missing
 
-lint: ## Run linting checks
-	poetry run black --check src/ tests/
-	poetry run isort --check-only src/ tests/
-	poetry run flake8 src/ tests/
+lint: ## Run linting checks with Ruff and mypy
+	ruff check src/ tests/
+	ruff format --check src/ tests/
 	poetry run mypy src/
 
-format: ## Format code with black and isort
-	poetry run black src/ tests/
-	poetry run isort src/ tests/
+format: ## Format code with Ruff
+	ruff check --fix src/ tests/
+	ruff format src/ tests/
 
 clean: ## Clean up generated files
 	find . -type d -name "__pycache__" -exec rm -rf {} +
