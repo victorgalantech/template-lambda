@@ -82,11 +82,20 @@ jobs:
             htmlcov/
             pytest-report.xml
       
+      - name: Debug SonarQube Configuration
+        run: |
+          echo "SONAR_HOST_URL is set to: ${{ vars.SONAR_HOST_URL }}"
+          echo "SONAR_TOKEN exists: ${{ secrets.SONAR_TOKEN != '' }}"
+          if [ -z "${{ vars.SONAR_HOST_URL }}" ]; then
+            echo "ERROR: SONAR_HOST_URL is empty!"
+            exit 1
+          fi
+      
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
@@ -101,7 +110,7 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
 
   # Job 2: Build and Push Docker Image to ECR
   build-and-push:
