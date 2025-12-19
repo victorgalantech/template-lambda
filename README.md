@@ -107,14 +107,64 @@ make test-verbose
 poetry run pytest tests/test_lambda_handler.py -v
 ```
 
-### Code quality checks
+### Code quality checks with Ruff
+
+Ruff is an extremely fast Python linter and formatter that replaces Black, isort, and Flake8.
+
+#### Check for linting issues
 
 ```bash
-# Run all linting checks
+# Check all files for linting issues
+poetry run ruff check src/ tests/
+
+# Check and automatically fix issues
+poetry run ruff check src/ tests/ --fix
+
+# Check specific file
+poetry run ruff check src/lambda_handler.py
+```
+
+#### Format code
+
+```bash
+# Format all files
+poetry run ruff format src/ tests/
+
+# Check formatting without making changes
+poetry run ruff format --check src/ tests/
+
+# Format specific file
+poetry run ruff format src/lambda_handler.py
+```
+
+#### Using Make commands
+
+```bash
+# Run all linting checks (Ruff + mypy)
 make lint
 
-# Format code
+# Auto-fix and format code
 make format
+```
+
+#### Common Ruff errors and fixes
+
+**F401 - Unused import**
+```bash
+# Remove unused imports automatically
+poetry run ruff check src/ tests/ --fix
+```
+
+**I001 - Import block is un-sorted**
+```bash
+# Sort imports automatically
+poetry run ruff check src/ tests/ --fix
+```
+
+**E501 - Line too long**
+```bash
+# Format code to fix line length
+poetry run ruff format src/ tests/
 ```
 
 ### Build and test Docker image locally
@@ -129,6 +179,35 @@ make docker-run
 # Test the local container
 make docker-test
 ```
+
+### Code Coverage with Codecov
+
+This project requires **minimum 80% code coverage** for all changes.
+
+#### Check coverage locally
+
+```bash
+# Run tests with coverage report
+poetry run pytest tests/ --cov=src --cov-report=term-missing
+
+# Generate HTML coverage report
+poetry run pytest tests/ --cov=src --cov-report=html
+# Open htmlcov/index.html in your browser
+```
+
+#### Coverage requirements
+
+- **Project coverage**: Must be ≥ 80%
+- **New code coverage**: Must be ≥ 80%
+- **Threshold**: 2% drop allowed from target
+
+The CI/CD pipeline will **fail** if coverage drops below 80%. Make sure to write tests for all new code!
+
+#### View coverage reports
+
+- **Locally**: Open `htmlcov/index.html` after running tests
+- **CI/CD**: Check the Codecov comment on your pull request
+- **Codecov Dashboard**: Visit https://codecov.io/gh/victorgalantech/template-lambda
 
 ## 🏗️ Infrastructure Setup
 
@@ -163,11 +242,10 @@ make terraform-apply
 The GitHub Actions workflow automatically:
 
 1. **Code Quality & Testing**
-   - Runs linting (Black, isort, Flake8)
    - Executes type checking (mypy)
    - Runs unit tests with coverage
-   - Performs SonarQube analysis
-   - Enforces quality gate
+   - Uploads coverage to Codecov
+   - **Fails if coverage < 80%**
 
 2. **Build & Push Docker Image**
    - Builds Docker image

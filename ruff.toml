@@ -9,7 +9,7 @@ target-version = "py312"
 line-length = 100
 
 # Enable auto-fixing where possible
-fix = true
+#fix = true
 
 [lint]
 # Enable specific rule sets

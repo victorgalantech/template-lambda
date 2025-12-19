@@ -1,0 +1,28 @@
+# Codecov configuration
+# https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%           # Minimum coverage target
+        threshold: 2%         # Allow 2% drop from target
+        if_ci_failed: error   # Fail if CI failed
+    patch:
+      default:
+        target: 80%           # New code must have 80% coverage
+        threshold: 2%
+
+  precision: 2                # Decimal places for coverage percentage
+  round: down                 # Round down coverage percentage
+  range: "70...100"          # Green if 70-100%, yellow if below
+
+comment:
+  layout: "reach,diff,flags,tree,files"
+  behavior: default
+  require_changes: false      # Always post comment
+
+ignore:
+  - "tests/**"               # Don't include test files in coverage
+  - "**/__init__.py"         # Don't include __init__ files
+  - "**/conftest.py"         # Don't include pytest config
