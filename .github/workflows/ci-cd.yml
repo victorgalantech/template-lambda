@@ -56,10 +56,38 @@ jobs:
         run: pip install ruff
       
       - name: Lint with Ruff
+        id: ruff-lint
         run: ruff check src/ tests/
+        continue-on-error: true
+      
+      - name: Show Ruff lint fix command
+        if: steps.ruff-lint.outcome == 'failure'
+        run: |
+          echo "❌ Ruff linting failed!"
+          echo ""
+          echo "To fix linting issues locally, run:"
+          echo "  poetry run ruff check src/ tests/ --fix"
+          echo ""
+          echo "To check without fixing:"
+          echo "  poetry run ruff check src/ tests/"
+          exit 1
       
       - name: Format check with Ruff
+        id: ruff-format
         run: ruff format --check src/ tests/
+        continue-on-error: true
+      
+      - name: Show Ruff format fix command
+        if: steps.ruff-format.outcome == 'failure'
+        run: |
+          echo "❌ Ruff formatting check failed!"
+          echo ""
+          echo "To format your code locally, run:"
+          echo "  poetry run ruff format src/ tests/"
+          echo ""
+          echo "To check formatting without fixing:"
+          echo "  poetry run ruff format --check src/ tests/"
+          exit 1
       
       - name: Run type checking
         run: poetry run mypy src/
