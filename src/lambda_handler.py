@@ -1,16 +1,17 @@
 """
 AWS Lambda handler for processing events.
 """
+
 import json
 import logging
-from typing import Any, Dict
+from typing import Any
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     """
     Main Lambda handler function.
 
@@ -71,7 +72,7 @@ def process_request(name: str) -> str:
     return f"Hello, {name}! Welcome to AWS Lambda."
 
 
-def validate_input(data: Dict[str, Any]) -> bool:
+def validate_input(data: Any) -> bool:
     """
     Validate input data.
 
@@ -81,8 +82,5 @@ def validate_input(data: Dict[str, Any]) -> bool:
     Returns:
         True if valid, False otherwise
     """
-    if not isinstance(data, dict):
-        return False
-
-    # Add your validation logic here
-    return True
+    # Return the condition directly (Ruff SIM103)
+    return isinstance(data, dict)

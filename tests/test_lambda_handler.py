@@ -1,6 +1,7 @@
 """
 Unit tests for Lambda handler.
 """
+
 import json
 from unittest.mock import Mock
 
