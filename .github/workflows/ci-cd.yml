@@ -74,26 +74,12 @@ jobs:
             --cov-report=term-missing \
             --junitxml=pytest-report.xml
       
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        # Si Codecov falla (por token o servidor), no rompas el pipeline entero
-        continue-on-error: true 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: true # Intenta fallar si hay error, pero 'continue-on-error' lo captura arriba
-          verbose: true # Genial para debuggear ese error 404
+            token: ${{ secrets.CODECOV_TOKEN }}
+            slug: victorgalantech/template-lambda
 
-      - name: Upload coverage reports
-        # Guardamos los reportes en GitHub para verlos si Codecov falla
-        if: always() 
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          path: |
-            coverage.xml
-            htmlcov/
-            pytest-report.xml
 
   # Job 2: Build and Push Docker Image to ECR
   build-and-push:
