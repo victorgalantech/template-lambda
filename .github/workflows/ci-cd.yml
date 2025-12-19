@@ -38,13 +38,6 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
       
-      - name: Generate lock file if missing
-        run: |
-          if [ ! -f poetry.lock ]; then
-            echo "poetry.lock not found, generating..."
-            poetry lock --no-update
-          fi
-      
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
@@ -81,27 +74,19 @@ jobs:
             --cov-report=term-missing \
             --junitxml=pytest-report.xml
       
-      - name: Debug Codecov Token
-        run: |
-          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
-            echo "ERROR: CODECOV_TOKEN is not set or is empty!"
-            echo "Please add CODECOV_TOKEN to your repository secrets"
-          else
-            echo "✓ CODECOV_TOKEN is set (length: ${#CODECOV_TOKEN})"
-          fi
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        # Si Codecov falla (por token o servidor), no rompas el pipeline entero
+        continue-on-error: true 
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          fail_ci_if_error: false
-          verbose: true
-        continue-on-error: true
-      
+          fail_ci_if_error: true # Intenta fallar si hay error, pero 'continue-on-error' lo captura arriba
+          verbose: true # Genial para debuggear ese error 404
+
       - name: Upload coverage reports
+        # Guardamos los reportes en GitHub para verlos si Codecov falla
+        if: always() 
         uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
