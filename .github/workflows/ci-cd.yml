@@ -77,6 +77,13 @@ jobs:
             --cov-fail-under=80 \
             --junitxml=pytest-report.xml
       
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+            slug: victorgalantech/template-lambda
+            fail_ci_if_error: true # Si Codecov falla, que falle el pipeline
+      
       - name: Check coverage threshold
         run: |
           COVERAGE=$(poetry run coverage report --precision=2 | grep TOTAL | awk '{print $4}' | sed 's/%//')
@@ -92,12 +99,6 @@ jobs:
           else
             echo "✅ Coverage is ${COVERAGE}% (meets 80% requirement)"
           fi
-      
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            slug: victorgalantech/template-lambda
 
 
   # Job 2: Build and Push Docker Image to ECR
