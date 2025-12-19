@@ -45,10 +45,7 @@ def es_impar(numero: int) -> bool:
 def es_primo(numero: int) -> bool:
     if numero < 2:
         return False
-    for i in range(2, int(numero ** 0.5) + 1):
-        if numero % i == 0:
-            return False
-    return True
+    return all(numero % i != 0 for i in range(2, int(numero ** 0.5) + 1))
 
 def validar_rango(numero: int, minimo: int, maximo: int) -> bool:
     return minimo <= numero <= maximo
