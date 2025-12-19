@@ -2,8 +2,10 @@
 Unit tests for Lambda handler.
 """
 import json
+from unittest.mock import MagicMock, Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
+
 from src.lambda_handler import lambda_handler, process_request, validate_input
 
 
