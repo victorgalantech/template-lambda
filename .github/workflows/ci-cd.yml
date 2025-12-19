@@ -81,13 +81,25 @@ jobs:
             --cov-report=term-missing \
             --junitxml=pytest-report.xml
       
+      - name: Debug Codecov Token
+        run: |
+          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
+            echo "ERROR: CODECOV_TOKEN is not set or is empty!"
+            echo "Please add CODECOV_TOKEN to your repository secrets"
+          else
+            echo "✓ CODECOV_TOKEN is set (length: ${#CODECOV_TOKEN})"
+          fi
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
+        continue-on-error: true
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
