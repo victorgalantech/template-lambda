@@ -167,31 +167,83 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build and push Docker image
+      # - name: Build and push Docker image
+      #   id: build-push
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+      #     platforms: linux/amd64
+      
+      # - name: Scan image with Trivy
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}@${{ steps.build-push.outputs.digest }}
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      #     Opcional: Si quieres fallar el pipeline en caso de error crítico
+      #     exit-code: '1'
+      #     severity: 'CRITICAL,HIGH'
+
+      # - name: Upload Trivy results to GitHub Security
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
+
+# ... (Pasos anteriores hasta Set up Docker Buildx son iguales) ...
+
+      # PASO 1: Construir y cargar en el Docker del Runner
+      - name: Build and Load for Scanning
+        id: build-load
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true       # ⚠ IMPORTANTE: Esto la deja en local, no la sube
+          push: false      # No subimos todavía
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # PASO 2: Escanear la imagen LOCAL
+      - name: Scan image with Trivy (Blocking)
+        uses: aquasecurity/trivy-action@master
+        with:
+          # Usamos una de las tags generadas. Como es local, Docker la reconoce.
+          # Nota: Trivy necesita un solo nombre de imagen.
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} # Usamos un tag específico o una estrategia para seleccionar uno
+          # OJO: Para simplificar, asegúrate que steps.meta genere un tag predecible o usa:
+          # image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          format: 'table'   # Para ver el log en consola primero
+          exit-code: '1'    # ⚠ CRÍTICO: Rompe el pipeline si hay fallos
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # PASO 2.5: (Opcional) Generar reporte SARIF para GitHub Security
+      # Puedes correr Trivy dos veces (una para bloquear consola, otra para reporte)
+      # o configurar el paso anterior para generar archivo y no fallar, y luego checkear el archivo.
+      
+      # PASO 3: Subir a ECR (Solo si el paso 2 pasó)
+      - name: Push to ECR
         id: build-push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          push: true
+          load: false
+          push: true       # ⚠ AHORA SÍ subimos
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64
-      
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-      
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+          cache-from: type=gha # ⚠ Reusa el caché del paso 1
+          cache-to: type=gha,mode=max  
 
   # Job 3: Deploy Infrastructure with Terraform
   terraform-deploy:
