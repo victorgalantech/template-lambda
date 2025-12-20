@@ -220,6 +220,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
 
       # PASO 2.5: (Opcional) Generar reporte SARIF para GitHub Security
       # Puedes correr Trivy dos veces (una para bloquear consola, otra para reporte)

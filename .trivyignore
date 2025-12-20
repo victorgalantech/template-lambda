@@ -1,0 +1,7 @@
+# Temporary ignore for CVE-2025-13601 in glib2
+# Reason: Fixed version (2.82.2-767.amzn2023) not yet available in Amazon Linux 2023 repos
+# The AWS Lambda base image (public.ecr.aws/lambda/python:3.12) contains glib2 2.82.2-766
+# which has this vulnerability, but the patched version hasn't been released yet.
+# This should be removed once AWS updates their base image.
+# Tracked: https://avd.aquasec.com/nvd/cve-2025-13601
+CVE-2025-13601
