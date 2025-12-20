@@ -4,7 +4,7 @@ FROM public.ecr.aws/lambda/python:3.12
 # Update OS packages to patch security vulnerabilities
 # Fixes CVE-2025-13601 in glib2 and other security issues
 RUN dnf makecache --refresh && \
-    dnf upgrade -y --security && \
+    dnf upgrade -y && \
     dnf clean all
 
 # Set working directory
