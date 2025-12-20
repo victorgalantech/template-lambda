@@ -203,9 +203,9 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          load: true       # ⚠ IMPORTANTE: Esto la deja en local, no la sube
-          push: false      # No subimos todavía
-          tags: ${{ steps.meta.outputs.tags }}
+          load: true       # Load to local Docker daemon for scanning
+          push: false      # Don't push yet
+          tags: local-scan:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -214,13 +214,9 @@ jobs:
       - name: Scan image with Trivy (Blocking)
         uses: aquasecurity/trivy-action@master
         with:
-          # Usamos una de las tags generadas. Como es local, Docker la reconoce.
-          # Nota: Trivy necesita un solo nombre de imagen.
-          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} # Usamos un tag específico o una estrategia para seleccionar uno
-          # OJO: Para simplificar, asegúrate que steps.meta genere un tag predecible o usa:
-          # image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
-          format: 'table'   # Para ver el log en consola primero
-          exit-code: '1'    # ⚠ CRÍTICO: Rompe el pipeline si hay fallos
+          image-ref: local-scan:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'    # Fail pipeline if vulnerabilities found
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
