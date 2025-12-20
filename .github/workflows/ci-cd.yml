@@ -296,11 +296,12 @@ jobs:
           path: terraform/tfplan
       
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        #if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: terraform apply -auto-approve -input=false tfplan
       
       - name: Terraform Output
         id: output
+        #if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         run: |
           echo "lambda_function_url=$(terraform output -raw lambda_function_url)" >> $GITHUB_OUTPUT
           echo "lambda_function_arn=$(terraform output -raw lambda_function_arn)" >> $GITHUB_OUTPUT
