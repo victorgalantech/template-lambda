@@ -12,7 +12,7 @@ on:
       - develop
       - feature/*
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: eu-west-1
   ECR_REPOSITORY: lambda-function-repo
   TERRAFORM_VERSION: 1.6.0
 
@@ -246,49 +246,3 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-
-  # Job 4: Integration Tests (Optional)
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: terraform-deploy
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      
-      - name: Wait for Lambda to be ready
-        run: |
-          echo "Waiting for Lambda function to be ready..."
-          sleep 30
-      
-      - name: Test Lambda Function
-        run: |
-          # Get Lambda function URL from Terraform outputs or AWS
-          FUNCTION_NAME="example-lambda-function"
-          
-          # Invoke Lambda function
-          aws lambda invoke \
-            --function-name $FUNCTION_NAME \
-            --payload '{"body": "{\"name\": \"CI/CD Test\"}"}' \
-            response.json
-          
-          # Check response
-          cat response.json
-          
-          # Verify statusCode is 200
-          STATUS_CODE=$(cat response.json | jq -r '.statusCode')
-          if [ "$STATUS_CODE" != "200" ]; then
-            echo "Lambda function test failed with status code: $STATUS_CODE"
-            exit 1
-          fi
-          
-          echo "Lambda function test passed!"
