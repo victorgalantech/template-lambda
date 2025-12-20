@@ -129,20 +129,27 @@ jobs:
         run: |
           REPO_NAME="${{ github.event.repository.name }}"
           echo "ECR_REPOSITORY=${REPO_NAME}" >> $GITHUB_ENV
-          echo "Using ECR repository name: ${REPO_NAME}"
+          echo "Checking ECR repository: ${REPO_NAME}"
           
-          # Check if repository exists
-          if aws ecr describe-repositories --repository-names "${REPO_NAME}" --region ${{ env.AWS_REGION }} 2>/dev/null; then
-            echo "✅ Repository '${REPO_NAME}' already exists"
-          else
-            echo "❌ Repository '${REPO_NAME}' does not exist, creating..."
-            aws ecr create-repository \
-              --repository-name "${REPO_NAME}" \
-              --region ${{ env.AWS_REGION }} \
-              --image-scanning-configuration scanOnPush=true \
-              --encryption-configuration encryptionType=AES256 \
-              --tags Key=ManagedBy,Value=GitHub-Actions Key=Project,Value=${{ github.event.repository.name }} Key=Repository,Value=${{ github.repository }}
+          # Try to create repository, ignore error if it already exists
+          set +e  # Don't exit on error
+          CREATE_OUTPUT=$(aws ecr create-repository \
+            --repository-name "${REPO_NAME}" \
+            --region ${{ env.AWS_REGION }} \
+            --image-scanning-configuration scanOnPush=true \
+            --encryption-configuration encryptionType=AES256 \
+            --tags Key=ManagedBy,Value=GitHub-Actions Key=Project,Value=${{ github.event.repository.name }} Key=Repository,Value=${{ github.repository }} 2>&1)
+          CREATE_EXIT_CODE=$?
+          set -e  # Re-enable exit on error
+          
+          if [ $CREATE_EXIT_CODE -eq 0 ]; then
             echo "✅ ECR repository '${REPO_NAME}' created successfully"
+          elif echo "$CREATE_OUTPUT" | grep -q "RepositoryAlreadyExistsException"; then
+            echo "✅ Repository '${REPO_NAME}' already exists, continuing..."
+          else
+            echo "❌ Error creating repository:"
+            echo "$CREATE_OUTPUT"
+            exit 1
           fi
       
       - name: Extract metadata for Docker
