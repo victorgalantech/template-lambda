@@ -124,35 +124,26 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      - name: Set ECR repository name
-        id: set-repo-name
+      - name: Check and Create ECR repository if needed
+        id: setup-ecr
         run: |
           REPO_NAME="${{ github.event.repository.name }}"
           echo "ECR_REPOSITORY=${REPO_NAME}" >> $GITHUB_ENV
           echo "Using ECR repository name: ${REPO_NAME}"
-      
-      - name: Check if ECR repository exists
-        id: check-ecr
-        run: |
-          if aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} 2>/dev/null; then
-            echo "✅ Repository '${{ env.ECR_REPOSITORY }}' exists"
-            echo "exists=true" >> $GITHUB_OUTPUT
+          
+          # Check if repository exists
+          if aws ecr describe-repositories --repository-names "${REPO_NAME}" --region ${{ env.AWS_REGION }} 2>/dev/null; then
+            echo "✅ Repository '${REPO_NAME}' already exists"
           else
-            echo "❌ Repository '${{ env.ECR_REPOSITORY }}' does not exist"
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Repository '${REPO_NAME}' does not exist, creating..."
+            aws ecr create-repository \
+              --repository-name "${REPO_NAME}" \
+              --region ${{ env.AWS_REGION }} \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256 \
+              --tags Key=ManagedBy,Value=GitHub-Actions Key=Project,Value=${{ github.event.repository.name }} Key=Repository,Value=${{ github.repository }}
+            echo "✅ ECR repository '${REPO_NAME}' created successfully"
           fi
-      
-      - name: Create ECR repository if it doesn't exist
-        if: steps.check-ecr.outputs.exists == 'false'
-        run: |
-          echo "Creating ECR repository: ${{ env.ECR_REPOSITORY }}"
-          aws ecr create-repository \
-            --repository-name ${{ env.ECR_REPOSITORY }} \
-            --region ${{ env.AWS_REGION }} \
-            --image-scanning-configuration scanOnPush=true \
-            --encryption-configuration encryptionType=AES256 \
-            --tags Key=ManagedBy,Value=GitHub-Actions Key=Project,Value=${{ github.event.repository.name }} Key=Repository,Value=${{ github.repository }}
-          echo "✅ ECR repository '${{ env.ECR_REPOSITORY }}' created successfully"
       
       - name: Extract metadata for Docker
         id: meta
