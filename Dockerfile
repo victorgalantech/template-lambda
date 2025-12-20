@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.12
 
 # Update OS packages to patch security vulnerabilities
 # Fixes CVE-2025-13601 in glib2
-RUN yum update -y glib2 && yum clean all
+RUN dnf update -y glib2 && dnf clean all
 
 # Set working directory
 WORKDIR ${LAMBDA_TASK_ROOT}
